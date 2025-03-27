@@ -312,10 +312,11 @@ def format_text_report(report):
     
     for var in report['required_variables']:
         lines.append(f"* {var['name']}")
-        for source in var['sources'][:3]:  # Limit to 3 sources to keep output manageable
-            lines.append(f"  - {source['source']} ({source['type']})")
-        if len(var['sources']) > 3:
-            lines.append(f"  - ... and {len(var['sources']) - 3} more occurrences")
+        if var.get('sources'):
+            for source in var['sources'][:3]:  # Limit to 3 sources to keep output manageable
+                lines.append(f"  - {source['source']} ({source['type']})")
+            if len(var['sources']) > 3:
+                lines.append(f"  - ... and {len(var['sources']) - 3} more occurrences")
     
     if not report['required_variables']:
         lines.append("None found.")
@@ -327,10 +328,11 @@ def format_text_report(report):
     
     for var in report['optional_variables']:
         lines.append(f"* {var['name']}")
-        for source in var['sources'][:2]:
-            lines.append(f"  - {source['source']} ({source['type']})")
-        if len(var['sources']) > 2:
-            lines.append(f"  - ... and {len(var['sources']) - 2} more occurrences")
+        if var.get('sources'):
+            for source in var['sources'][:2]:
+                lines.append(f"  - {source['source']} ({source['type']})")
+            if len(var['sources']) > 2:
+                lines.append(f"  - ... and {len(var['sources']) - 2} more occurrences")
     
     if not report['optional_variables']:
         lines.append("None found.")
@@ -342,12 +344,12 @@ def format_text_report(report):
     
     for var in report['defined_variables']:
         lines.append(f"* {var['name']}")
-        # Show just a couple of sources
-        for source in var['sources'][:2]:
-            lines.append(f"  - {source['source']} ({source['type']})")
-        if len(var['sources']) > 2:
-            lines.append(f"  - ... and {len(var['sources']) - 2} more occurrences")
-    
+        if var.get('sources'):
+            for source in var['sources'][:2]:
+                lines.append(f"  - {source['source']} ({source['type']})")
+            if len(var['sources']) > 2:
+                lines.append(f"  - ... and {len(var['sources']) - 2} more occurrences")
+        
     if not report['defined_variables']:
         lines.append("None found.")
     
