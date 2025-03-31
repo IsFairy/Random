@@ -22,6 +22,7 @@ class AnsibleVariablesExtractor:
         self.variable_sources = defaultdict(list)
         self.jinja2_pattern = re.compile(r"{{[\s]*([a-zA-Z0-9_\.\[\]\"\']+(?:\s*\|\s*[a-zA-Z0-9_]+)*)[\s]*}}")
         self.jinja2_if_pattern = re.compile(r"{%[\s]*if[\s]+(.*?)[\s]*%}")
+        self.jinja2_for_pattern = re.compile(r"{%[\s]*for[\s]+([a-zA-Z0-9_]+)[\s]+in[\s]+([a-zA-Z0-9_\.]+)[\s]*%}")
         self.yaml_var_pattern = re.compile(r"{{\s*([a-zA-Z0-9_\.]+)\s*}}")
         self.when_condition_pattern = re.compile(r"when:[\s]*(.*)")
 
@@ -41,7 +42,6 @@ class AnsibleVariablesExtractor:
                 if self._is_ansible_file(file):
                     file_path = os.path.join(root, file)
                     self._process_file(file_path)
-                    print(f"Processed: {os.path.relpath(file_path, self.playbook_dir)}")
         
         return dict(self.variables), dict(self.variable_sources)
 
@@ -114,6 +114,16 @@ class AnsibleVariablesExtractor:
             for var_name in var_matches:
                 if not self._should_ignore_variable(var_name):
                     self._add_variable(var_name, source, 'template_condition')
+
+        # Find variables in {% for item in list %} loops
+        for match in self.jinja2_for_pattern.finditer(content):
+            loop_var = match.group(1).strip()
+            list_var = match.group(2).strip()
+            # Add loop variable
+            self._add_variable(loop_var, source, 'template_loop')
+            # Add list variable
+            if not self._should_ignore_variable(list_var):
+                self._add_variable(list_var, source, 'template_loop_list')
 
     def _extract_from_yaml(self, content, source):
         """Extract variables from YAML files"""
